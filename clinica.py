@@ -1,3 +1,5 @@
+from collections import deque
+
 # === SISTEMA CLÍNICA VIDA+ ===
 # Desenvolvido por: Alexandra Cordeiro
 # Objetivo: Cadastrar pacientes, exibir estatísticas e permitir buscas.
@@ -13,7 +15,6 @@ def cadastrar_paciente():
         idade = int(input("Idade: "))
         telefone = input("Telefone: ").strip()
 
-        # Cria um dicionário com os dados
         paciente = {
             "nome": nome,
             "idade": idade,
@@ -43,7 +44,7 @@ def ver_estatisticas():
     print(f"🧒 Paciente mais novo: {mais_novo['nome']} ({mais_novo['idade']} anos)")
     print(f"👴 Paciente mais velho: {mais_velho['nome']} ({mais_velho['idade']} anos)")
 
-# Função para buscar paciente pelo nome
+# Função para buscar paciente
 def buscar_paciente():
     print("\n=== BUSCAR PACIENTE ===")
     nome_busca = input("Digite o nome do paciente: ").strip().title()
@@ -55,7 +56,7 @@ def buscar_paciente():
     else:
         print("❌ Paciente não encontrado.")
 
-# Função para listar todos os pacientes
+# Função para listar pacientes
 def listar_pacientes():
     print("\n=== LISTA DE PACIENTES ===")
     if len(pacientes) == 0:
@@ -65,15 +66,73 @@ def listar_pacientes():
     for i, p in enumerate(pacientes, start=1):
         print(f"{i}. {p['nome']} - {p['idade']} anos - {p['telefone']}")
 
-# Função principal (menu)
+# === CONTROLE DE ACESSO ===
+def controle_acesso():
+    print("\n=== CONTROLE DE ACESSO AO ATENDIMENTO ===")
+
+    # Entrada dos dados
+    A = input("Tem agendamento? (s/n): ").lower() == "s"
+    B = input("Documentos em dia (RG/CPF válidos)? (s/n): ").lower() == "s"
+    C = input("Há médico disponível? (s/n): ").lower() == "s"
+    D = input("Pagamentos em dia? (s/n): ").lower() == "s"
+
+    consulta_normal = (A and B and C) or (B and C and D)
+    emergencia = C and (B or D)
+
+    print("\n--- RESULTADOS ---")
+    print(f"Consulta Normal: {'✅ Pode ser atendido' if consulta_normal else '❌ Não pode ser atendido'}")
+    print(f"Emergência: {'✅ Pode ser atendido' if emergencia else '❌ Não pode ser atendido'}")
+
+
+def situacao_pratica():
+    print("\n=== SITUAÇÃO PRÁTICA ===")
+    print("A=F (Sem agendamento), B=V (Documentos OK), C=V (Médico disponível), D=F (Pagamentos atrasados)")
+
+    A, B, C, D = False, True, True, False
+
+    consulta_normal = (A and B and C) or (B and C and D)
+    emergencia = C and (B or D)
+
+    print(f"Consulta Normal: {'✅ Atendido' if consulta_normal else '❌ Não atendido'}")
+    print(f"Emergência: {'✅ Atendido' if emergencia else '❌ Não atendido'}")
+
+# === FILA DE ATENDIMENTO ===
+fila = deque()
+
+def fila_atendimento():
+    print("\n=== FILA DE ATENDIMENTO ===")
+    
+    for i in range(3):
+        nome = input(f"Digite o nome do {i+1}º paciente: ").title().strip()
+        cpf = input("Digite o CPF: ").strip()
+        fila.append({"nome": nome, "cpf": cpf})
+
+    print("\nFila inicial:")
+    for p in fila:
+        print(f"- {p['nome']} ({p['cpf']})")
+
+    if fila:
+        atendido = fila.popleft()
+        print(f"\n🩺 Paciente em atendimento: {atendido['nome']}")
+    
+    if fila:
+        print("\n📋 Pacientes que ainda aguardam:")
+        for p in fila:
+            print(f"- {p['nome']} ({p['cpf']})")
+    else:
+        print("\n✅ Todos os pacientes foram atendidos.")
+
+# === MENU PRINCIPAL ===
 def menu():
     while True:
         print("\n=== SISTEMA CLÍNICA VIDA+ ===")
         print("1. Cadastrar paciente")
         print("2. Ver estatísticas")
         print("3. Buscar paciente")
-        print("4. Listar todos os pacientes")
-        print("5. Sair")
+        print("4. Listar pacientes")
+        print("5. Controle de acesso")
+        print("6. Fila de atendimento")
+        print("7. Sair")
 
         opcao = input("Escolha uma opção: ")
 
@@ -86,7 +145,11 @@ def menu():
         elif opcao == "4":
             listar_pacientes()
         elif opcao == "5":
-            print("👋 Encerrando o sistema... Até logo!")
+            controle_acesso()
+        elif opcao == "6":
+            fila_atendimento()
+        elif opcao == "7":
+            print("Encerrando o sistema... Até logo!")
             break
         else:
             print("⚠️ Opção inválida! Tente novamente.")
